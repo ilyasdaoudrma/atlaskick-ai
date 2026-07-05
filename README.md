@@ -1,108 +1,134 @@
-# ⚽ AtlasKick AI — World Cup 2026 Match Intelligence
+<div align="center">
 
-An **explainable football intelligence platform** for World Cup 2026 that combines historical
-match data, probabilistic prediction, tactical indicators and AI-generated match insights —
-with a dedicated **Morocco mode** following the Atlas Lions' knockout run.
+<img src="public/img/poster.png" alt="AtlasKick AI — World Cup 2026 Match Intelligence" width="100%" />
 
-> Not "my AI predicts winners." Every probability decomposes into feature attributions the
-> user can interrogate: Elo gap, recent form, chance creation, defensive stability, xG balance.
+<h1>AtlasKick&nbsp;·&nbsp;AI</h1>
 
-**Live pages**
+**An explainable World Cup 2026 football-intelligence platform — with a special Morocco mode.**
 
-| Page | What it does |
+Not *"my AI predicts the winner."* Every probability decomposes into named, quantified factors you can interrogate.
+
+<p>
+  <a href="https://atlaskick-ai.vercel.app"><img src="https://img.shields.io/badge/▶_Live_Demo-atlaskick--ai.vercel.app-C4441F?style=for-the-badge" alt="Live Demo" /></a>
+</p>
+
+<p>
+  <img src="https://img.shields.io/badge/React-19-1c1c1c?logo=react&logoColor=61DAFB" />
+  <img src="https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white" />
+  <img src="https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white" />
+  <img src="https://img.shields.io/badge/Tailwind-v4-06B6D4?logo=tailwindcss&logoColor=white" />
+  <img src="https://img.shields.io/badge/Framer_Motion-anim-EF476F?logo=framer&logoColor=white" />
+  <img src="https://img.shields.io/badge/Groq-Llama_3.3-F55036?logo=meta&logoColor=white" />
+  <img src="https://img.shields.io/badge/Vercel-deployed-black?logo=vercel&logoColor=white" />
+</p>
+
+</div>
+
+---
+
+## What it is
+
+Most prediction apps reduce a match to one opaque number. **AtlasKick does the opposite** — it shows its work. Pick any match and you get win/draw/loss probabilities, expected goals and the most likely scoreline, plus a **SHAP-style breakdown of *why*** (Elo gap, recent form, chance creation, defensive stability, xG balance). It fuses three statistical models, a Monte Carlo tournament simulator and a grounded AI analyst into one live product — deployed with **zero standing infrastructure**.
+
+## ✨ Features
+
+| | |
 |---|---|
-| **Dashboard** | Cinematic hero, live results ticker, draggable fixtures carousel with live model odds, knockout bracket with advance probabilities, Elo power rankings, golden-boot race |
-| **Predictions** | Pick any of the 48 teams: ensemble win/draw/loss, expected goals, most likely scoreline, per-model breakdown, SHAP-style waterfall of feature attributions, Poisson scoreline matrix, model-generated explanation |
-| **Morocco** | Match-by-match journey timeline, Spain rematch analysis, Monte Carlo round-reach odds, player danger board, attack-zone analytics, 2022 Qatar vs 2026 comparison |
-| **Simulator** | Monte Carlo engine — replays the remaining bracket 10,000× and reports quarter/semi/final/champion frequencies for all 16 alive teams |
-| **AI Assistant** | Grounded, retrieval-first analyst. Answers only from the platform's analytics tables and cites its sources under every response — never invents numbers |
+| 🎯 **Ensemble predictions** | Three models — Elo win-expectancy, Poisson/Dixon-Coles goals, feature logistic — blended and calibrated |
+| 🔍 **Explainable (SHAP-style)** | Additive log-odds attributions rendered as a waterfall + plain-English "why", generated from the model's own numbers |
+| 🎲 **Monte Carlo simulator** | Replays the remaining bracket 10,000× for each team's round-reach & title odds, with an interactive **what-if lab** |
+| 🤖 **Grounded AI analyst** | Llama 3.3 (Groq) answers **only** from live platform data, streams, remembers the chat, cites sources, refuses off-topic |
+| ⚡ **Live everything** | Real scores, exact match minute, in-play win probability, formation line-ups, a full-stats **Match Centre** |
+| 📊 **Auto-updating boards** | Goals / assists / shots / saves / cards leaderboards + live Elo power rankings with movement arrows |
+| 🏆 **Self-advancing bracket** | Winners advance automatically; "winner of X–Y" slots resolve as results land |
+| 📈 **Model accuracy tracker** | Freezes each pick pre-kickoff, grades it vs the result — hit rate, Brier score, calibration chart |
+| 🇲🇦 **Morocco Mode** | Live journey timeline, next-match panel, squad danger board, attack zones, 2022-vs-2026 — all derived from the live feed |
+| 🎨 **"Terracotta Broadcast" design** | Distinctive Moroccan-editorial system, animated gradient signature, scroll-driven motion, fully mobile |
 
-## The prediction engine (ensemble of 3 models)
+## 🧠 The prediction engine
 
-1. **Elo win-expectancy** — rating-difference logistic baseline
-2. **Poisson / Dixon-Coles goal model** — attack × defense indices → full scoreline
-   probability matrix with low-score correction
-3. **Feature logistic model** — form, tournament xG, defensive stability, clean sheets
+Three complementary models — using several rather than one demonstrates model comparison and produces a better-calibrated result:
 
-Explainability: additive **log-odds attributions** from the logistic model (the exact
-decomposition SHAP yields for linear models), converted to percentage-point swings and rendered
-as a waterfall chart. The natural-language "why" is templated **from the model's own numbers** —
-an LLM never invents the explanation.
+1. **Elo win-expectancy** — rating-difference logistic baseline (long-run team strength)
+2. **Poisson / Dixon-Coles goal model** — attack × defense indices → full scoreline probability matrix with a low-score correction
+3. **Feature logistic model** — Elo gap, form, chance creation, defensive stability, xG balance, clean sheets
 
-The Monte Carlo simulator samples every knockout tie as a Bernoulli trial from the ensemble
-probabilities (draw mass reallocated for extra time / penalties) and replays the bracket
-10,000 times in chunks so the UI animates real progress.
+**Explainability** is the point: for a linear model the additive log-odds decomposition *is* the SHAP attribution. AtlasKick computes each feature's contribution, converts it to a percentage-point swing on the win probability, and renders it as a waterfall chart — every sentence of the written explanation maps to a computed number, nothing is invented.
 
-## Stack
+## 🏗️ Architecture
 
-- **React 19 + TypeScript + Vite** — SPA with react-router
-- **Framer Motion** — cinematic scroll-linked zooms, parallax, staggered reveals, draggable
-  carousel, animated counters and charts
-- **Tailwind CSS v4** + custom design tokens — dark broadcast-style design system
-  (Barlow Condensed / Inter / IBM Plex Mono)
-- **Pure-TS analytics engine** (`src/engine/`) — no server needed for the demo; the same
-  interfaces map 1:1 onto the production architecture below
-- **AI-generated imagery** — hero visuals generated with Nano Banana (stadium, Morocco fans,
-  tactical pitch)
-
-## Production architecture (Phase 3 target)
+A static SPA with two lightweight cloud attachments — **no backend server, no database**.
 
 ```
-Football APIs / StatsBomb open data / fixture feeds
-        ↓
-Python data pipeline (Pandas)  →  PostgreSQL / Supabase
-        ↓
-ML training (scikit-learn, XGBoost) + SHAP explanations
-        ↓
-FastAPI backend  →  this React frontend  →  Vercel / Render
-        ↑
-GitHub Actions cron refresh
+  Public data sources                    ┌──────────────────────────────┐
+  ESPN · worldfootballrankings ─────────▶│  browser live fetch (90s)     │
+  · TheSportsDB                          │  ⊕ cloud job every 3 hours    │
+                                         └───────────────┬──────────────┘
+                                                         ▼
+                          pure-TypeScript analytics engine + snapshot.json
+                          (Elo · Poisson · ensemble · SHAP · Monte Carlo)
+                                                         ▼
+                              React + Framer Motion UI  ·  Vercel CDN
+
+  AI path:  question → retrieval context from live tables
+                     → serverless Groq proxy (key stays server-side) → streamed answer
+                     → deterministic rule-based fallback if the LLM is down
 ```
 
-## Live data — dual-provider
+## 🛠️ Tech stack
 
-Two keyless, CORS-open feeds, both refreshed every 90 seconds:
+| Layer | Tech |
+|---|---|
+| Language | TypeScript (strict) |
+| UI | React 19 · React Router · Framer Motion |
+| Build / style | Vite 8 · Tailwind CSS v4 · CSS-variable design tokens |
+| Fonts | Bricolage Grotesque · Instrument Sans · IBM Plex Mono |
+| Analytics | Pure-TS engine (`src/engine/`) — Elo, Poisson, logistic, SHAP, Monte Carlo |
+| AI | Llama 3.3 70B on Groq, behind a Vercel Edge proxy |
+| Data | ESPN API · worldfootballrankings.com · TheSportsDB |
+| Automation | Node fetcher on a GitHub Actions 3-hourly cron |
+| Hosting | Vercel (static + serverless + CDN) |
 
-**TheSportsDB** (fixtures backbone) + **ESPN public API** (enrichment): exact live match
-clocks, faster score flips, and the **Match Centre** (`/match/:espnId`) — possession bar,
-full boxscore (shots, on target, pass accuracy, tackles, corners, cards…), minute-stamped
-goal/card timeline, venue and attendance, auto-refreshing every 45s during live games.
-Every finished knockout match on the dashboard's Results grid links into it.
+## 📡 Live data
 
-**Player leaderboards** (dashboard, tabbed): Goals and Assists come from ESPN's official
-tournament statistics feed (full tournament, 50 deep); Saves, Cards and Shots are aggregated
-from every finished knockout match's rosters — each match is fetched exactly once and cached,
-so one new request per finished game keeps every board current. The AI assistant answers
-"who has the most saves / cards / goals" from the same live boards.
+- **Live scores, stats & Elo** stream from keyless public sources (ESPN, worldfootballrankings) — refreshed every 90s in the browser and **every 3 hours in the cloud** via GitHub Actions, so the data stays fresh even when the app is closed.
+- **Accurate goal counts** via a per-player **maximum across two ESPN feeds** (the aggregate lags on new goals; the live scoreboard misses some old ones — the max is correct for everyone and never over-counts).
+- **Graceful fallbacks everywhere** — cached payloads, a bundled snapshot, and a rule-based assistant. The app is never blank.
 
-What the combined feed drives:
-
-- **Ticker + carousel** — latest scores, penalty shootouts (`AET`/`AP` statuses) and upcoming
-  kickoffs straight from the feed, with a `LIVE FEED · hh:mm` badge showing the last sync
-- **Bracket** — TBD Round-of-16 slots resolve automatically as R32 winners come in
-- **Simulator & assistant** — decided matches are *locked to their real result*; only
-  undecided games are sampled, so the Monte Carlo always continues from the true bracket state
-- **Fallbacks** — last successful payload is cached in `localStorage`; if the API is
-  unreachable, the app degrades to the bundled July 3, 2026 snapshot (badge turns amber)
-
-The free community key works out of the box; set `VITE_SPORTSDB_KEY` in `.env` (see
-`.env.example`) for a personal key with higher limits. Providers are isolated in
-`src/services/sportsdb.ts` and `src/services/espn.ts`; each failing independently degrades
-gracefully (ESPN is an unofficial public API — if it ever changes, the app loses the live
-clock and Match Centre but never the scores).
-
-Group standings, squad facts and scorers are a verified July 3 snapshot; team ratings and xG
-indices are the platform's own model values.
-
-## Run it
+## 🚀 Getting started
 
 ```bash
 npm install
-npm run dev     # http://localhost:5190
-npm run build   # production build (~140 kB gzipped)
+npm run dev      # http://localhost:5190
+npm run build    # production build
+npm run snapshot # regenerate the live data snapshot
 ```
 
-## Credits & disclaimers
+For the AI assistant in local dev, add a Groq key to `.env`:
 
-- Historical/event-level analysis pattern based on **StatsBomb open data** conventions.
-- Demo dataset is illustrative. Not affiliated with FIFA.
+```bash
+VITE_GROQ_API_KEY=your_dev_key   # dev only — gitignored, never deployed
+```
+
+## ☁️ Deployment
+
+Deploys as a static app + one serverless function on **Vercel**. See **[DEPLOY.md](DEPLOY.md)** for the full guide — in short:
+
+1. Push to GitHub (auto-deploy target).
+2. Import into Vercel (Vite + the `api/` function auto-detected).
+3. Set `GROQ_API_KEY` as a Production env var → redeploy. *(The key stays server-side, never in the bundle.)*
+4. Enable the GitHub Actions workflow → stats refresh every 3 hours in the cloud.
+
+## 📄 Disclaimers
+
+Portfolio project. Not affiliated with FIFA. Team ratings and xG indices are the platform's own model values; scores, fixtures and Elo are pulled from public sources.
+
+---
+
+<div align="center">
+
+**Created by Ilyas Daoud El Asmi** &nbsp;·&nbsp; ❤️
+
+<a href="https://atlaskick-ai.vercel.app">Live Demo</a>
+
+</div>
