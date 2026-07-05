@@ -1,0 +1,36 @@
+name: Refresh stats snapshot
+
+# Runs in the cloud every 3 hours — independent of anyone opening the app —
+# regenerates public/data/snapshot.json from the live sources and commits it.
+# If the site is deployed from this repo (Vercel/Netlify/Pages), the commit
+# triggers a redeploy, so the published app is never more than ~3h stale.
+
+on:
+  schedule:
+    - cron: '0 */3 * * *' # every 3 hours, on the hour
+  workflow_dispatch: {} # allow manual runs from the Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Fetch fresh snapshot
+        run: node scripts/fetch-snapshot.mjs
+      - name: Commit if changed
+        run: |
+          git config user.name "atlaskick-bot"
+          git config user.email "bot@atlaskick.local"
+          git add public/data/snapshot.json
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore: refresh stats snapshot [skip ci]"
+            git push
+          fi
