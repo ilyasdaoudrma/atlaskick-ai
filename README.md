@@ -45,6 +45,25 @@ Most prediction apps reduce a match to one opaque number. **AtlasKick does the o
 | 🇲🇦 **Morocco Mode** | Live journey timeline, next-match panel, squad danger board, attack zones, 2022-vs-2026 — all derived from the live feed |
 | 🎨 **"Terracotta Broadcast" design** | Distinctive Moroccan-editorial system, animated gradient signature, scroll-driven motion, fully mobile |
 
+## 📸 Screenshots
+
+<div align="center">
+
+**Dashboard** — cinematic hero, live feed, quarter-final CTA
+<img src="docs/screenshots/dashboard.png" alt="AtlasKick dashboard" width="100%" />
+
+**Explainable predictions** — SHAP-style feature attributions + Poisson scoreline matrix
+<img src="docs/screenshots/explainability.png" alt="SHAP-style feature attributions and Poisson matrix" width="100%" />
+
+<table>
+<tr>
+<td width="50%"><b>Pick any matchup</b><br/><img src="docs/screenshots/predictions.png" alt="Match prediction engine" /></td>
+<td width="50%"><b>Morocco Mode</b><br/><img src="docs/screenshots/morocco.png" alt="Morocco Mode" /></td>
+</tr>
+</table>
+
+</div>
+
 ## 🧠 The prediction engine
 
 Three complementary models — using several rather than one demonstrates model comparison and produces a better-calibrated result:
