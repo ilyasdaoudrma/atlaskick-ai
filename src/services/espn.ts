@@ -7,10 +7,56 @@ import type { Fixture } from '../data/fixtures'
 import { NAME_TO_ID } from './sportsdb'
 
 const BASE = 'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world'
-// Knockout window — one date-range request maps every knockout match.
+// Knockout window — maps every knockout match.
 const KNOCKOUT_RANGE = '20260628-20260719'
-// Full-tournament window — one request returns every match's scoring plays.
+// Full-tournament window — returns every match's scoring plays.
 const TOURNAMENT_RANGE = '20260611-20260719'
+
+// ESPN stopped accepting `dates=YYYYMMDD-YYYYMMDD` on the scoreboard endpoint
+// in September 2026 — it now answers `400 Failed to get events endpoint.` for
+// any day range. A single day (`YYYYMMDD`) and a whole month (`YYYYMM`) still
+// work, so a window is requested month by month and merged. A plain year
+// (`YYYY`) is not an option: it caps the response at 100 events and silently
+// truncates the tournament.
+const nextMonth = (ym: number): number =>
+  ym % 100 === 12 ? (Math.floor(ym / 100) + 1) * 100 + 1 : ym + 1
+
+const monthsInRange = (range: string): string[] => {
+  const [from, to] = range.split('-')
+  const months: string[] = []
+  const last = Number(to.slice(0, 6))
+  for (let ym = Number(from.slice(0, 6)); ym <= last; ym = nextMonth(ym)) months.push(String(ym))
+  return months
+}
+
+const withinRange = (range: string, iso: string | undefined): boolean => {
+  const [from, to] = range.split('-')
+  const day = (iso ?? '').slice(0, 10).replaceAll('-', '')
+  return day >= from && day <= to
+}
+
+// Fetch every event in a window. Months overlap at the UTC boundary (a late
+// kick-off on the 1st shows up in both pages), so merge on event id.
+const fetchScoreboardRange = async <T extends { id: string; date: string }>(
+  range: string,
+  label: string,
+): Promise<T[]> => {
+  const pages = await Promise.all(
+    monthsInRange(range).map(async (ym) => {
+      const res = await fetch(`${BASE}/scoreboard?dates=${ym}`)
+      if (!res.ok) throw new Error(`${label}: HTTP ${res.status}`)
+      return (await res.json()) as { events?: T[] }
+    }),
+  )
+
+  const events = new Map<string, T>()
+  for (const page of pages) {
+    for (const e of page.events ?? []) {
+      if (e?.id && withinRange(range, e.date)) events.set(e.id, e)
+    }
+  }
+  return [...events.values()]
+}
 
 /* ---------------- scoreboard (list + live clocks) ---------------- */
 
@@ -105,22 +151,22 @@ const fixName = (s: string): string => {
   }
 }
 
+interface EspnScoringEvent {
+  id: string
+  date: string
+  competitions?: {
+    competitors?: EspnCompetitor[]
+    details?: ScoringDetail[]
+    status?: { type?: { state?: string } }
+  }[]
+}
+
 export const fetchTournamentScorers = async (): Promise<ScorerCount[]> => {
-  const res = await fetch(`${BASE}/scoreboard?dates=${TOURNAMENT_RANGE}`)
-  if (!res.ok) throw new Error(`ESPN scorers: HTTP ${res.status}`)
-  const data = (await res.json()) as {
-    events?: {
-      competitions?: {
-        competitors?: EspnCompetitor[]
-        details?: ScoringDetail[]
-        status?: { type?: { state?: string } }
-      }[]
-    }[]
-  }
+  const events = await fetchScoreboardRange<EspnScoringEvent>(TOURNAMENT_RANGE, 'ESPN scorers')
 
   const tally = new Map<string, ScorerCount>()
 
-  for (const e of data.events ?? []) {
+  for (const e of events) {
     const comp = e.competitions?.[0]
     if (!comp) continue
     // ESPN team id → our team id, from this match's competitors.
@@ -153,10 +199,8 @@ export const fetchTournamentScorers = async (): Promise<ScorerCount[]> => {
 }
 
 export const fetchEspnKnockouts = async (): Promise<EspnMatch[]> => {
-  const res = await fetch(`${BASE}/scoreboard?dates=${KNOCKOUT_RANGE}`)
-  if (!res.ok) throw new Error(`ESPN scoreboard: HTTP ${res.status}`)
-  const data = (await res.json()) as { events?: EspnEvent[] }
-  return (data.events ?? []).map(parseEvent).filter((m): m is EspnMatch => m !== null)
+  const events = await fetchScoreboardRange<EspnEvent>(KNOCKOUT_RANGE, 'ESPN scoreboard')
+  return events.map(parseEvent).filter((m): m is EspnMatch => m !== null)
 }
 
 // Upgrade fixtures in place (immutably): attach espnId, live minute, and the

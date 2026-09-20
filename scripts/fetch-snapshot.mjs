@@ -17,6 +17,7 @@ import { dirname, join } from 'node:path'
 
 const BASE = 'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world'
 const TOURNAMENT_RANGE = '20260611-20260719'
+const [RANGE_FROM, RANGE_TO] = TOURNAMENT_RANGE.split('-')
 const ELO_URL = 'https://r.jina.ai/https://worldfootballrankings.com/rankings'
 
 const NAME_TO_ID = {
@@ -47,14 +48,45 @@ const getJson = async (url) => {
   return res.json()
 }
 
+// ESPN stopped accepting `dates=YYYYMMDD-YYYYMMDD` on the scoreboard endpoint
+// in September 2026 — it now answers `400 Failed to get events endpoint.` for
+// any day range. A single day (`YYYYMMDD`) and a whole month (`YYYYMM`) still
+// work, so the tournament window is requested month by month instead. A plain
+// year (`YYYY`) is not an option: it caps the response at 100 events and
+// silently truncates the tournament.
+const nextMonth = (ym) => (ym % 100 === 12 ? (Math.floor(ym / 100) + 1) * 100 + 1 : ym + 1)
+
+const monthsInRange = (from, to) => {
+  const months = []
+  const last = Number(to.slice(0, 6))
+  for (let ym = Number(from.slice(0, 6)); ym <= last; ym = nextMonth(ym)) months.push(String(ym))
+  return months
+}
+
+const withinRange = (iso) => {
+  const day = (iso ?? '').slice(0, 10).replaceAll('-', '')
+  return day >= RANGE_FROM && day <= RANGE_TO
+}
+
 // ---------- fixtures + goal scorers from the scoreboard ----------
 async function fetchScoreboard() {
-  const data = await getJson(`${BASE}/scoreboard?dates=${TOURNAMENT_RANGE}`)
+  const months = monthsInRange(RANGE_FROM, RANGE_TO)
+  const pages = await Promise.all(months.map((ym) => getJson(`${BASE}/scoreboard?dates=${ym}`)))
+
+  // Months overlap at the UTC boundary (a late kick-off on the 1st shows up in
+  // both pages), so merge on event id before aggregating anything.
+  const events = new Map()
+  for (const page of pages) {
+    for (const e of page.events ?? []) {
+      if (e?.id && withinRange(e.date)) events.set(e.id, e)
+    }
+  }
+
   const fixtures = []
   const goals = new Map()
   const GOAL_TYPES = new Set(['Goal', 'Penalty - Scored'])
 
-  for (const e of data.events ?? []) {
+  for (const e of events.values()) {
     const comp = e.competitions?.[0]
     if (!comp) continue
     const comps = comp.competitors ?? []
