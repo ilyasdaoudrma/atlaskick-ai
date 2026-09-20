@@ -95,7 +95,7 @@ export function LeadersBoard({ leaders, scheduledAt }: { leaders: LeaderBoards; 
 
       <p className="mono mt-3 text-[0.58rem] leading-relaxed tracking-[0.08em] uppercase" style={{ color: 'var(--faint)' }}>
         Goals & assists: full tournament · Saves, cards, shots: knockout aggregate · Sources: ESPN
-        + worldfootballrankings{scheduledAt ? ` · auto-refreshed every 3h · last ${new Date(scheduledAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}` : ' · live'}
+        + worldfootballrankings{scheduledAt ? ` · final · ${new Date(scheduledAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}` : ' · live'}
       </p>
     </div>
   )

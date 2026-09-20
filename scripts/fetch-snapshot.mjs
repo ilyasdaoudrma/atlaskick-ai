@@ -1,9 +1,11 @@
-// Scheduled data fetcher — runs OUTSIDE the browser (Node), so it works even
-// when the app is closed. A cron (GitHub Actions in the cloud, or a Windows
-// Scheduled Task locally) invokes this every 3 hours; it pulls every source,
+// Snapshot builder — runs OUTSIDE the browser (Node). It pulls every source,
 // aggregates the leaderboards + Elo + fixtures, and writes
-// public/data/snapshot.json. The app reads that snapshot on open, so whenever
-// you launch it the stats are as fresh as the last scheduled run.
+// public/data/snapshot.json, which the app reads on open.
+//
+// This no longer runs on a schedule. The 2026 World Cup finished on
+// 2026-07-19, so the snapshot in the repo is final; the workflow that calls
+// this (.github/workflows/refresh-stats.yml) is manual-dispatch only now.
+// Run it by hand — `npm run snapshot` — only if the snapshot needs rebuilding.
 //
 // Sources (all free, server-side so no CORS restrictions apply):
 //   · ESPN scoreboard        — fixtures, live scores, goal scorers (lag-free)

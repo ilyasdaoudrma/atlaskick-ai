@@ -81,7 +81,7 @@ A static SPA with two lightweight cloud attachments — **no backend server, no 
 ```
   Public data sources                    ┌──────────────────────────────┐
   ESPN · worldfootballrankings ─────────▶│  browser live fetch (90s)     │
-  · TheSportsDB                          │  ⊕ cloud job every 3 hours    │
+  · TheSportsDB                          │  ⊕ final snapshot.json        │
                                          └───────────────┬──────────────┘
                                                          ▼
                           pure-TypeScript analytics engine + snapshot.json
@@ -105,12 +105,12 @@ A static SPA with two lightweight cloud attachments — **no backend server, no 
 | Analytics | Pure-TS engine (`src/engine/`) — Elo, Poisson, logistic, SHAP, Monte Carlo |
 | AI | Llama 3.3 70B on Groq, behind a Vercel Edge proxy |
 | Data | ESPN API · worldfootballrankings.com · TheSportsDB |
-| Automation | Node fetcher on a GitHub Actions 3-hourly cron |
+| Automation | Node fetcher on GitHub Actions (manual dispatch) |
 | Hosting | Vercel (static + serverless + CDN) |
 
 ## 📡 Live data
 
-- **Live scores, stats & Elo** stream from keyless public sources (ESPN, worldfootballrankings) — refreshed every 90s in the browser and **every 3 hours in the cloud** via GitHub Actions, so the data stays fresh even when the app is closed.
+- **Scores, stats & Elo** come from keyless public sources (ESPN, worldfootballrankings). During the tournament a GitHub Actions job rebuilt the snapshot every 3 hours; the 2026 World Cup finished on 2026-07-19, so **the committed snapshot is now final** and that job is manual-dispatch only.
 - **Accurate goal counts** via a per-player **maximum across two ESPN feeds** (the aggregate lags on new goals; the live scoreboard misses some old ones — the max is correct for everyone and never over-counts).
 - **Graceful fallbacks everywhere** — cached payloads, a bundled snapshot, and a rule-based assistant. The app is never blank.
 
@@ -136,7 +136,7 @@ Deploys as a static app + one serverless function on **Vercel**. See **[DEPLOY.m
 1. Push to GitHub (auto-deploy target).
 2. Import into Vercel (Vite + the `api/` function auto-detected).
 3. Set `GROQ_API_KEY` as a Production env var → redeploy. *(The key stays server-side, never in the bundle.)*
-4. Enable the GitHub Actions workflow → stats refresh every 3 hours in the cloud.
+4. Optional: Actions tab → "Refresh stats snapshot" → Run workflow, to rebuild `public/data/snapshot.json` in the cloud.
 
 ## 📄 Disclaimers
 
